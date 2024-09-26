@@ -14,13 +14,15 @@ Este projeto é uma aplicação Go que consulta o serviço ViaCep para obter inf
 
 ### Passos para Rodar
 
-1. **Clone o repositório** (se ainda não o fez):
+1. **Clone o repositório**
    ```sh
    git clone <URL-do-repositório>
    cd <nome-do-repositório>
 
 2. **Compile e execute o programa:**
+   ```sh 
     go run main.go <CEP>
 
 **Substitua <CEP> pelo CEP que você deseja consultar. Por exemplo:**
+   ```sh
     go run main.go 01001000

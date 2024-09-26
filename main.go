@@ -2,10 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
-	"os"
 )
 
 // Construção da struct ViaCep para armazenar os dados do JSON que vier da resposta da requisição
@@ -24,37 +22,55 @@ type ViaCep struct {
 }
 
 func main() {
-	for _, cep := range os.Args[1:] { // Para cada argumento passado na linha de comando, faça uma requisição GET
-		req, err := http.Get("http://viacep.com.br/ws/" + cep + "/json/")
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Erro ao fazer requisição: %v\n", err)
-		}
+	http.HandleFunc("/", BuscaCEPHandler) // Rota para a função BuscaCEPHandler
+	http.ListenAndServe(":8080", nil)     // Inicia o servidor na porta 8080
+}
 
-		defer req.Body.Close() // Fechando o corpo da requisição após o uso
-
-		resp, err := io.ReadAll(req.Body) // Lendo a resposta da requisição
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Erro ao ler resposta: %v\n", err)
-		}
-		var data ViaCep
-
-		err = json.Unmarshal(resp, &data) // Transformando o JSON em uma struct ViaCep
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Erro ao fazer parse do JSON: %v\n", err)
-		}
-
-		file, err := os.Create("cep.txt") // Criando um arquivo chamado cep.json pra armaenar os dados
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Erro ao criar arquivo: %v\n", err)
-		}
-
-		defer file.Close() // Fechando o arquivo após o uso e com WriteString escrevendo os dados no arquivo
-		_, err = file.WriteString(fmt.Sprintf("CEP: %s\nLongradouro: %s\nComplemento: %s\nBairro: %s\nLocalidade: %s\nUF: %s\nEstado: %s\nIBGE: %s\nGIA: %s\nDDD: %s\nSIAFI: %s\n", data.Cep, data.Longradouro, data.Complemento, data.Bairro, data.Localidade, data.Uf, data.Estado, data.Ibge, data.Gia, data.Ddd, data.Siafi))
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Erro ao escrever no arquivo: %v\n", err)
-		}
-
-		fmt.Println("Arquivo criado com sucesso!")
-
+func BuscaCEPHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" { // Verifica se a URL é diferente de "/"
+		w.WriteHeader(http.StatusNotFound)
+		return
 	}
+	// r.URL.Query().Get("cep") pega o valor do parâmetro 'cep' da URL
+	cepParam := r.URL.Query().Get("cep")
+	if cepParam == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("O parâmetro 'cep' é obrigatório"))
+		return
+	}
+
+	cep, err := BuscaCep(cepParam)
+	if err != nil { // Verifica se houve um erro na requisição
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Erro ao buscar o CEP"))
+		return
+	}
+
+	// Setando o cabeçalho da resposta
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(cep) // Envia a resposta em JSON
+
+}
+
+// Função que faz a requisição para a API do ViaCEP
+func BuscaCep(cep string) (*ViaCep, error) {
+	resp, err := http.Get("https://viacep.com.br/ws/" + cep + "/json/")
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close() // Fecha o corpo da resposta após a função terminar
+
+	body, err := io.ReadAll(resp.Body) // Lê o corpo da resposta
+	if err != nil {
+		return nil, err
+	}
+
+	var c ViaCep
+	err = json.Unmarshal(body, &c) // Converte o JSON para a struct ViaCep
+	if err != nil {
+		return nil, err
+	}
+
+	return &c, nil
 }

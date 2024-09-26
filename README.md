@@ -26,6 +26,6 @@ Este projeto é uma aplicação Go que consulta o serviço ViaCep para obter inf
    ```sh
     `curl "http://localhost:8080/?cep=<CEP>"``
 
-**Substitua <CEP> pelo CEP que você deseja consultar. Por exemplo:**
+4. **Substitua <CEP> pelo CEP que você deseja consultar. Por exemplo:**
 ```sh
     `curl "http://localhost:8080/?cep=01001000"`

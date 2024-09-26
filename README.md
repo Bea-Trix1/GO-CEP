@@ -1,10 +1,11 @@
 # Explicação do Projeto
 
-Este projeto é uma aplicação Go que consulta o serviço ViaCep para obter informações sobre um CEP (Código de Endereçamento Postal) fornecido como argumento na linha de comando. A aplicação faz uma requisição HTTP para o serviço ViaCep, recebe a resposta em formato JSON, converte essa resposta para uma struct Go e salva os dados em um arquivo de texto.
+Este projeto é uma aplicação Go que consulta o serviço ViaCep para obter informações sobre um CEP fornecido como parâmetro na URL. A aplicação expõe um endpoint HTTP que recebe o CEP, faz uma requisição ao serviço ViaCep, e retorna os dados em formato JSON.
+
 
 ## Estrutura do Projeto
 
-- `main.go`: Arquivo principal que contém a lógica para fazer a requisição HTTP, processar a resposta e salvar os dados em um arquivo.
+- `main.go`: Arquivo principal que contém a lógica para iniciar o servidor HTTP, processar a requisição e fazer a consulta ao serviço ViaCep.
 
 ## Como Rodar
 
@@ -15,14 +16,15 @@ Este projeto é uma aplicação Go que consulta o serviço ViaCep para obter inf
 ### Passos para Rodar
 
 1. **Clone o repositório**
-   ```sh
-   git clone <URL-do-repositório>
-   cd <nome-do-repositório>
 
 2. **Compile e execute o programa:**
    ```sh 
-    go run main.go <CEP>
+    go run main.go
+
+**Acesse o endpoint: Abra o navegador ou use uma ferramenta como curl para acessar o endpoint:**
+   ```sh
+    curl "http://localhost:8080/?cep=<CEP>"
 
 **Substitua <CEP> pelo CEP que você deseja consultar. Por exemplo:**
    ```sh
-    go run main.go 01001000
+    curl "http://localhost:8080/?cep=01001000" 
